@@ -24,7 +24,7 @@ Source credentials
 ------------------
     . credentials
 
-Cleanup and delete ALL (warning!) existing containers & volumes
+Cleanup and delete ALL existing containers & volumes
 --------------------------------------------------------------------
     docker rm -fv $(docker ps -aq)
 
