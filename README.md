@@ -37,6 +37,14 @@ Provision LDAP server:
     ldapsearch -x -h $LDAP_PORT_389_TCP_ADDR -b dc=acme,dc=org
     exit
 
+Create Fernet keys data container:
+-----------------------------------------
+    tools/start-keystone-fernet-keys.sh
+
+Start master region:
+--------------------
+TBD
+
 References with good information:
 ---------------------------------
 * http://dev.mysql.com/doc/refman/5.6/en/index.html
