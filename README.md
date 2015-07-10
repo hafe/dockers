@@ -46,7 +46,8 @@ Create Fernet keys data container:
 
 Start master region:
 --------------------
-TBD
+    tools/start-mysql-galera.sh Kista 10
+    TBD
 
 References with good information:
 ---------------------------------

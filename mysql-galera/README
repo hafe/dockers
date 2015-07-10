@@ -1,0 +1,30 @@
+# Information about how to configure a mysql slave for replication
+
+http://dev.mysql.com/doc/refman/5.6/en/replication.html
+https://dev.mysql.com/doc/refman/5.6/en/replication-solutions-scaleout.html
+
+# Start slave replication
+
+masterip=$(docker inspect -f "{{.NetworkSettings.IPAddress}}" mysql-Kista-1)
+docker exec -it mysql-Solna-1 env MASTER_IP=$masterip bash
+
+mysql -prootroot -e "CHANGE MASTER TO MASTER_HOST='$MASTER_IP', MASTER_PORT=3306, MASTER_AUTO_POSITION=1, MASTER_USER='repl', MASTER_PASSWORD='replpass';"
+mysql -prootroot -e "START SLAVE;"
+
+# Check replication setup on slave
+docker exec -it mysql-Solna-1 env MASTER_IP=$masterip bash
+mysqlrplcheck -v --master=root:rootroot@$MASTER_IP:3306 --slave=root:rootroot@localhost:3306
+
+# Test replication
+for name in Kista Solna Tensta; do
+    docker exec -it mysql-$name-1 mysql -prootroot keystone -e "select * from domain;"
+    docker exec -it mysql-$name-2 mysql -prootroot keystone -e "select * from domain;"
+    docker exec -it mysql-$name-3 mysql -prootroot keystone -e "select * from domain;"
+done
+
+# Show slave status on mysql master
+docker exec -it mysql-Kista-12 mysql -prootroot -e "show slave hosts;"
+
+# Show slave status
+docker exec -it mysql-Solna-21 mysql -prootroot -e "show slave status\G;"
+
