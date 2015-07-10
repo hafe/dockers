@@ -1,0 +1,232 @@
+diff --git a/keystone/common/ldap/core.py b/keystone/common/ldap/core.py
+index 3cb7e9d..5db4f3c 100644
+--- a/keystone/common/ldap/core.py
++++ b/keystone/common/ldap/core.py
+@@ -1673,7 +1673,7 @@ class BaseLdap(object):
+                       'entries': not_deleted_nodes[:3],
+                       'dots': '...' if len(not_deleted_nodes) > 3 else ''})
+ 
+-    def filter_query(self, hints, query=None):
++    def filter_query(self, hints, query=''):
+         """Applies filtering to a query.
+ 
+         :param hints: contains the list of filters, which may be None,
+
+From cb32568954e7ab7f2dbaa2aa7a3070b34ae3ca08 Mon Sep 17 00:00:00 2001
+From: Lance Bragstad <lbragstad@gmail.com>
+Date: Wed, 27 May 2015 18:18:28 +0000
+Subject: [PATCH] Don't fail on converting user ids to bytes
+
+When building Fernet token payloads, we should attempt to convert user IDs to bytes
+because this makes the payload a little smaller, resulting in a smaller token.
+But if we are unable to convert the user ID to bytes we shouldn't fail with a
+ValueError because the user ID could be coming from LDAP, or some other
+external identity backend. We can't assume the user ID is a UUID.
+
+Change-Id: I05b1e8389b15475c3fe512a2f82ec86f81422a05
+Closes-Bug: 1459382
+---
+ keystone/tests/unit/token/test_fernet_provider.py  | 79 ++++++++++++++++++++++
+ .../token/providers/fernet/token_formatters.py     | 16 ++---
+ 2 files changed, 87 insertions(+), 8 deletions(-)
+
+diff --git a/keystone/tests/unit/token/test_fernet_provider.py b/keystone/tests/unit/token/test_fernet_provider.py
+index 23fc021..e2c5ca6 100644
+--- a/keystone/tests/unit/token/test_fernet_provider.py
++++ b/keystone/tests/unit/token/test_fernet_provider.py
+@@ -181,3 +181,82 @@ class TestPayloads(tests.TestCase):
+         self.assertEqual(exp_expires_at, expires_at)
+         self.assertEqual(exp_audit_ids, audit_ids)
+         self.assertEqual(exp_trust_id, trust_id)
++
++    def test_unscoped_payload_with_non_uuid_user_id(self):
++        exp_user_id = 'someNonUuidUserId'
++        exp_methods = ['password']
++        exp_expires_at = timeutils.isotime(timeutils.utcnow())
++        exp_audit_ids = [provider.random_urlsafe_str()]
++
++        payload = token_formatters.UnscopedPayload.assemble(
++            exp_user_id, exp_methods, exp_expires_at, exp_audit_ids)
++
++        (user_id, methods, expires_at, audit_ids) = (
++            token_formatters.UnscopedPayload.disassemble(payload))
++
++        self.assertEqual(exp_user_id, user_id)
++        self.assertEqual(exp_methods, methods)
++        self.assertEqual(exp_expires_at, expires_at)
++        self.assertEqual(exp_audit_ids, audit_ids)
++
++    def test_project_scoped_payload_with_non_uuid_user_id(self):
++        exp_user_id = 'someNonUuidUserId'
++        exp_methods = ['password']
++        exp_project_id = uuid.uuid4().hex
++        exp_expires_at = timeutils.isotime(timeutils.utcnow())
++        exp_audit_ids = [provider.random_urlsafe_str()]
++
++        payload = token_formatters.ProjectScopedPayload.assemble(
++            exp_user_id, exp_methods, exp_project_id, exp_expires_at,
++            exp_audit_ids)
++
++        (user_id, methods, project_id, expires_at, audit_ids) = (
++            token_formatters.ProjectScopedPayload.disassemble(payload))
++
++        self.assertEqual(exp_user_id, user_id)
++        self.assertEqual(exp_methods, methods)
++        self.assertEqual(exp_project_id, project_id)
++        self.assertEqual(exp_expires_at, expires_at)
++        self.assertEqual(exp_audit_ids, audit_ids)
++
++    def test_domain_scoped_payload_with_non_uuid_user_id(self):
++        exp_user_id = 'someNonUuidUserId'
++        exp_methods = ['password']
++        exp_domain_id = uuid.uuid4().hex
++        exp_expires_at = timeutils.isotime(timeutils.utcnow())
++        exp_audit_ids = [provider.random_urlsafe_str()]
++
++        payload = token_formatters.DomainScopedPayload.assemble(
++            exp_user_id, exp_methods, exp_domain_id, exp_expires_at,
++            exp_audit_ids)
++
++        (user_id, methods, domain_id, expires_at, audit_ids) = (
++            token_formatters.DomainScopedPayload.disassemble(payload))
++
++        self.assertEqual(exp_user_id, user_id)
++        self.assertEqual(exp_methods, methods)
++        self.assertEqual(exp_domain_id, domain_id)
++        self.assertEqual(exp_expires_at, expires_at)
++        self.assertEqual(exp_audit_ids, audit_ids)
++
++    def test_trust_scoped_payload_with_non_uuid_user_id(self):
++        exp_user_id = 'someNonUuidUserId'
++        exp_methods = ['password']
++        exp_project_id = uuid.uuid4().hex
++        exp_expires_at = timeutils.isotime(timeutils.utcnow())
++        exp_audit_ids = [provider.random_urlsafe_str()]
++        exp_trust_id = uuid.uuid4().hex
++
++        payload = token_formatters.TrustScopedPayload.assemble(
++            exp_user_id, exp_methods, exp_project_id, exp_expires_at,
++            exp_audit_ids, exp_trust_id)
++
++        (user_id, methods, project_id, expires_at, audit_ids, trust_id) = (
++            token_formatters.TrustScopedPayload.disassemble(payload))
++
++        self.assertEqual(exp_user_id, user_id)
++        self.assertEqual(exp_methods, methods)
++        self.assertEqual(exp_project_id, project_id)
++        self.assertEqual(exp_expires_at, expires_at)
++        self.assertEqual(exp_audit_ids, audit_ids)
++        self.assertEqual(exp_trust_id, trust_id)
+diff --git a/keystone/token/providers/fernet/token_formatters.py b/keystone/token/providers/fernet/token_formatters.py
+index 169155e..73b9a79 100644
+--- a/keystone/token/providers/fernet/token_formatters.py
++++ b/keystone/token/providers/fernet/token_formatters.py
+@@ -319,7 +319,7 @@ class UnscopedPayload(BasePayload):
+         :returns: the payload of an unscoped token
+ 
+         """
+-        b_user_id = cls.convert_uuid_hex_to_bytes(user_id)
++        b_user_id = cls.attempt_convert_uuid_hex_to_bytes(user_id)
+         methods = auth_plugins.convert_method_list_to_integer(methods)
+         expires_at_int = cls._convert_time_string_to_int(expires_at)
+         b_audit_ids = list(map(provider.random_urlsafe_str_to_bytes,
+@@ -335,7 +335,7 @@ class UnscopedPayload(BasePayload):
+                  audit_ids
+ 
+         """
+-        user_id = cls.convert_uuid_bytes_to_hex(payload[0])
++        user_id = cls.attempt_convert_uuid_bytes_to_hex(payload[0])
+         methods = auth_plugins.convert_integer_to_method_list(payload[1])
+         expires_at_str = cls._convert_int_to_time_string(payload[2])
+         audit_ids = list(map(provider.base64_encode, payload[3]))
+@@ -357,7 +357,7 @@ class DomainScopedPayload(BasePayload):
+         :returns: the payload of a domain-scoped token
+ 
+         """
+-        b_user_id = cls.convert_uuid_hex_to_bytes(user_id)
++        b_user_id = cls.attempt_convert_uuid_hex_to_bytes(user_id)
+         methods = auth_plugins.convert_method_list_to_integer(methods)
+         try:
+             b_domain_id = cls.convert_uuid_hex_to_bytes(domain_id)
+@@ -381,7 +381,7 @@ class DomainScopedPayload(BasePayload):
+                  expires_at_str, and audit_ids
+ 
+         """
+-        user_id = cls.convert_uuid_bytes_to_hex(payload[0])
++        user_id = cls.attempt_convert_uuid_bytes_to_hex(payload[0])
+         methods = auth_plugins.convert_integer_to_method_list(payload[1])
+         try:
+             domain_id = cls.convert_uuid_bytes_to_hex(payload[2])
+@@ -412,7 +412,7 @@ class ProjectScopedPayload(BasePayload):
+         :returns: the payload of a project-scoped token
+ 
+         """
+-        b_user_id = cls.convert_uuid_hex_to_bytes(user_id)
++        b_user_id = cls.attempt_convert_uuid_hex_to_bytes(user_id)
+         methods = auth_plugins.convert_method_list_to_integer(methods)
+         b_project_id = cls.convert_uuid_hex_to_bytes(project_id)
+         expires_at_int = cls._convert_time_string_to_int(expires_at)
+@@ -429,7 +429,7 @@ class ProjectScopedPayload(BasePayload):
+                  expires_at_str, and audit_ids
+ 
+         """
+-        user_id = cls.convert_uuid_bytes_to_hex(payload[0])
++        user_id = cls.attempt_convert_uuid_bytes_to_hex(payload[0])
+         methods = auth_plugins.convert_integer_to_method_list(payload[1])
+         project_id = cls.convert_uuid_bytes_to_hex(payload[2])
+         expires_at_str = cls._convert_int_to_time_string(payload[3])
+@@ -455,7 +455,7 @@ class TrustScopedPayload(BasePayload):
+         :returns: the payload of a trust-scoped token
+ 
+         """
+-        b_user_id = cls.convert_uuid_hex_to_bytes(user_id)
++        b_user_id = cls.attempt_convert_uuid_hex_to_bytes(user_id)
+         methods = auth_plugins.convert_method_list_to_integer(methods)
+         b_project_id = cls.convert_uuid_hex_to_bytes(project_id)
+         b_trust_id = cls.convert_uuid_hex_to_bytes(trust_id)
+@@ -475,7 +475,7 @@ class TrustScopedPayload(BasePayload):
+                   expires_at_str, audit_ids, and trust_id
+ 
+         """
+-        user_id = cls.convert_uuid_bytes_to_hex(payload[0])
++        user_id = cls.attempt_convert_uuid_bytes_to_hex(payload[0])
+         methods = auth_plugins.convert_integer_to_method_list(payload[1])
+         project_id = cls.convert_uuid_bytes_to_hex(payload[2])
+         expires_at_str = cls._convert_int_to_time_string(payload[3])
+-- 
+1.9.1
+
+diff --git a/keystone/identity/core.py b/keystone/identity/core.py
+index 4bacf8d..5ffdb34 100644
+--- a/keystone/identity/core.py
++++ b/keystone/identity/core.py
+@@ -123,6 +123,8 @@ class DomainConfigs(dict):
+                 domain_name)
+             return
+ 
++        LOG.info(_LW('Found domain: %s'), domain_name)
++
+         # Create a new entry in the domain config dict, which contains
+         # a new instance of both the conf environment and driver using
+         # options defined in this set of config files.  Later, when we
+@@ -161,6 +163,7 @@ class DomainConfigs(dict):
+                         conf_dir)
+             return
+ 
++        LOG.info(_LW('Scanning domain config directory: %s'), conf_dir)
+         for r, d, f in os.walk(conf_dir):
+             for fname in f:
+                 if (fname.startswith(DOMAIN_CONF_FHEAD) and
+diff --git a/keystone/identity/backends/ldap.py b/keystone/identity/backends/ldap.py
+index b861c45..76e3db2 100644
+--- a/keystone/identity/backends/ldap.py
++++ b/keystone/identity/backends/ldap.py
+@@ -396,7 +396,7 @@ class GroupApi(common_ldap.BaseLdap):
+         group = self.get_by_name(group_name)
+         return common_ldap.filter_entity(group)
+ 
+-    def get_all_filtered(self, hints, query=None):
++    def get_all_filtered(self, hints, query=''):
+         query = self.filter_query(hints, query)
+         return [common_ldap.filter_entity(group)
+                 for group in self.get_all(query)]
