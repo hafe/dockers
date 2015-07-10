@@ -18,7 +18,7 @@ create_server_conf() {
 
     cat > $filename << EOF
 [mysqld]
-server_id=$id
+server_id=$server_id
 report-host=mysql-$cluster_name-$server_id
 report-port=3306
 wsrep_cluster_name=$cluster_name
