@@ -48,6 +48,54 @@ Start master region 'Kista':
 ----------------------------
     tools/start-mysql-galera.sh Kista 10
     tools/start-memcached.sh Kista
+    tools/start-keystone-region-1.sh Kista mysql-Kista-11 master
+    
+    # create domain 'acme' and project 'demo'
+    docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
+    openstack domain create --description "acme LDAP domain" acme
+    openstack project create --domain acme --description "Demo project" demo
+    exit
+    
+    # Restart keystone after domain and project has been created
+    # (cannot use 'docker restart' since IP changes)
+    docker stop keystone_Kista
+    docker rm keystone_Kista
+    docker rm -f memcached_Kista
+    tools/start-memcached.sh Kista
+    tools/start-keystone-region-2.sh Kista mysql-Kista-11
+
+    # Assign role 'user' role to group 'demo' in project 'demo'
+    # Needs to be done after the keystone restart to reference the group in LDAP
+    docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
+    projid=$(openstack project show -f shell demo -c id | awk -F [=\"] '{print $3}')
+    openstack role add --project $projid --group demo --group-domain acme user
+    exit
+
+    # for test, dump admin accessible Keystone info
+    docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
+    openstack project list --domain acme
+    openstack region list
+    openstack domain list
+    openstack project list --long
+    openstack user list --domain Default
+    openstack user list --domain acme
+    openstack user show john --domain acme
+    openstack endpoint list
+    openstack role list
+    openstack role assignment list
+    openstack group list --domain acme
+    exit
+    
+    # for test, dump user accessible Keystone info
+    docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
+    export OS_USERNAME=john
+    export OS_PASSWORD=john
+    export OS_USER_DOMAIN_NAME=acme
+    export OS_PROJECT_DOMAIN_NAME=acme
+    export OS_PROJECT_NAME=demo
+    openstack catalog list
+    exit
+    
     TBD
 
 References with useful information:
