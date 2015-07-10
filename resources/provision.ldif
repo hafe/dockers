@@ -1,0 +1,49 @@
+dn: ou=Users,dc=acme,dc=org
+objectClass: organizationalUnit
+ou: Users
+
+dn: ou=Groups,dc=acme,dc=org
+objectClass: organizationalUnit
+ou: Groups
+
+dn: cn=demo,ou=Groups,dc=acme,dc=org
+objectClass: groupOfNames
+cn: demo
+description: demo groups
+member: uid=john,ou=Users,dc=acme,dc=org
+member: uid=mary,ou=Users,dc=acme,dc=org
+
+dn: uid=john,ou=Users,dc=acme,dc=org
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: john
+sn: Smith
+givenName: John
+cn: John Smith
+mail: John.Smith@acme.org
+displayName: John Smith
+uidNumber: 10000
+gidNumber: 5000
+userPassword: john
+gecos: John Smith
+loginShell: /bin/bash
+homeDirectory: /home/john
+
+dn: uid=mary,ou=Users,dc=acme,dc=org
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: mary
+sn: Smith
+givenName: Mary
+cn: Mary Smith
+mail: Mary.Smith@acme.org
+displayName: Mary Smith
+uidNumber: 10001
+gidNumber: 5000
+userPassword: mary
+gecos: Mary Smith
+loginShell: /bin/bash
+homeDirectory: /home/mary
+

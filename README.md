@@ -21,9 +21,9 @@ Source credentials
 ------------------
     . credentials
 
-Cleanup and delete all existing containers & volumes
+Cleanup and delete ALL (warning!) existing containers & volumes
 --------------------------------------------------------------------
-    docker rm -fv $(docker ps -aq | grep hafe)
+    docker rm -fv $(docker ps -aq)
 
 Start LDAP server:
 ------------------
@@ -32,7 +32,7 @@ Start LDAP server:
 Provision LDAP server:
 ----------------------
     docker run -it --rm --link slapd:ldap -e SLAPD_PASSWORD=$SLAPD_PASSWORD \
-      -v $PWD/os-base/provision.ldif:/root/provision.ldif hafe/os-base
+      -v $PWD/resources/provision.ldif:/root/provision.ldif hafe/os-base
     ldapadd -x -D cn=admin,dc=acme,dc=org -w $SLAPD_PASSWORD -f /root/provision.ldif -h ldap
     ldapsearch -x -h $LDAP_PORT_389_TCP_ADDR -b dc=acme,dc=org
     exit
