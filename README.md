@@ -28,12 +28,10 @@ Cleanup and delete ALL (warning!) existing containers & volumes
 --------------------------------------------------------------------
     docker rm -fv $(docker ps -aq)
 
-Start LDAP server:
-------------------
+Start LDAP server and provision it:
+-----------------------------------
     tools/start-slapd.sh
-
-Provision LDAP server:
-----------------------
+    sleep 2
     docker run -it --rm --link slapd:ldap -e SLAPD_PASSWORD=$SLAPD_PASSWORD \
       -v $PWD/resources/provision.ldif:/root/provision.ldif hafe/os-base
     ldapadd -x -D cn=admin,dc=acme,dc=org -w $SLAPD_PASSWORD -f /root/provision.ldif -h ldap
