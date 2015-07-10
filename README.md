@@ -45,6 +45,9 @@ Create Fernet keys data container:
 Start master region 'Kista':
 ----------------------------
     tools/start-mysql-galera.sh Kista 10
+    # wait until galera cluster is up and synced
+    docker logs -f mysql-Kista-11
+
     tools/start-memcached.sh Kista
     tools/start-keystone-region-1.sh Kista mysql-Kista-11 master
     
@@ -106,6 +109,7 @@ Start region "Solna":
 ----------------------
     # Start slave database cluster
     tools/start-mysql-galera.sh Solna 20
+    # wait until galera cluster is up and synced
 
     # start replication of slave database server, see mysql-galera/README
 
