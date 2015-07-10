@@ -6,6 +6,8 @@ working to some extent.
 
 The (current) goal is just to be able prototype multi region cloud.
 
+To follow these steps you probably need a fairly recent docker version like 1.7.
+
 Short description:
 ------------------
 * Human users are in a singleton (shared by all regions) LDAP server.
