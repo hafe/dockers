@@ -69,7 +69,7 @@ Start master region 'Kista':
     openstack role add --project $projid --group demo --group-domain acme user
     exit
 
-    # for test, dump admin accessible Keystone info
+    # Test Keystone API access for user 'admin'
     docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
     openstack project list --domain acme
     openstack region list
@@ -84,7 +84,7 @@ Start master region 'Kista':
     openstack group list --domain acme
     exit
     
-    # for test, dump user accessible Keystone info
+    # Test Keystone API access for user 'john'
     docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
     export OS_USERNAME=john
     export OS_PASSWORD=john
@@ -94,6 +94,14 @@ Start master region 'Kista':
     openstack catalog list
     exit
     
+    # Start glance
+    tools/start-glance.sh Kista mysql-Kista-12 keystone_Kista
+
+    # Test Glance API access for user 'admin'
+    docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
+    glance image-list
+    exit
+
     TBD
 
 References with useful information:
