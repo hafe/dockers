@@ -1,7 +1,7 @@
 # hafe/dockers
 
 Instructions and tools to start a mini multi region cloud on a single host
-using docker containers. The only available services are keystone and glance
+using docker containers. The only available services are keystone and glance, 
 working to some extent.
 
 The (current) goal is just to be able prototype multi region cloud.
@@ -10,8 +10,11 @@ Short description:
 ------------------
 * Human users are in a singleton (shared by all regions) LDAP server.
 * OpenStack Kilo is used since containers use Ubuntu 15.04 as base and its OS packages.
+* Some ugly patches applied to Keystone which will break soon, FIX!
 * A mysql-5.6-galera cluster (3 containers) is started per region
+* Keystone configured to use Fernet tokens
 * mysql async master/slave replication between the master cluster and slave clusters
+* Some reuse from the OpenStack kolla project, see ref below
 
 Build container images
 ----------------------
@@ -52,3 +55,4 @@ References with good information:
 * http://severalnines.com/blog
 * http://www.ibm.com/developerworks/cloud/library/cl-configure-keystone-ldap-and-active-directory/index.html
 * http://docs.openstack.org/admin-guide-cloud/content/configuring-keystone-for-ldap-backend-identity.html
+* https://github.com/stackforge/kolla
