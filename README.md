@@ -44,12 +44,13 @@ Create Fernet keys data container:
 -----------------------------------------
     tools/start-keystone-fernet-keys.sh
 
-Start master region:
---------------------
+Start master region 'Kista':
+----------------------------
     tools/start-mysql-galera.sh Kista 10
+    tools/start-memcached.sh Kista
     TBD
 
-References with good information:
+References with useful information:
 ---------------------------------
 * http://dev.mysql.com/doc/refman/5.6/en/index.html
 * http://galeracluster.com/documentation-webpages/
