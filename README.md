@@ -102,7 +102,16 @@ Start master region 'Kista':
     glance image-list
     exit
 
-    TBD
+Start region "Solna":
+----------------------
+    # Start slave database cluster
+    tools/start-mysql-galera.sh Solna 20
+
+    # start replication of slave database server, see mysql-galera/README
+
+    tools/start-memcached.sh Solna
+    tools/start-keystone-region.sh Solna mysql-Solna-22
+    tools/start-glance.sh Solna mysql-Solna-22 keystone_Kista
 
 References with useful information:
 ---------------------------------
