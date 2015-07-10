@@ -18,7 +18,7 @@ Short description:
 
 Build container images
 ----------------------
-    . build_all
+    . build-all
 
 Source credentials
 ------------------
