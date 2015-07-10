@@ -1,0 +1,7 @@
+docker build -t hafe/os-base os-base
+docker build -t hafe/keystone keystone
+docker build -t hafe/glance glance
+docker build -t hafe/openstack-client openstack-client
+docker build -t hafe/memcached memcached
+docker build -t hafe/mysql-galera mysql-galera
+
