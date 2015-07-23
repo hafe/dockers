@@ -3,6 +3,7 @@ MAINTAINER hafe
 
 RUN sed -i 's/archive.ubuntu.com/ftp.acc.umu.se/g' /etc/apt/sources.list
 
+RUN apt-get update
 RUN apt-get install -y \
     glance && \
     rm -f /var/lib/glance/glance.sqlite

@@ -109,6 +109,11 @@ Start master region 'Kista':
 
 Start region "Solna":
 ----------------------
+    # backup mysql-galera/my.cnf to mysql-galera/my.cnf.bak
+    # replace "binlog-do-db=keystone" to "replicate-do-db=keystone" in the
+    # mysql-galera/my.cnf, rebuild image for slave.
+    docker build -t hafe/mysql-galera mysql-galera 
+
     # Start slave database cluster
     tools/start-mysql-galera.sh Solna 20
     # wait until galera cluster is up and synced
@@ -117,7 +122,8 @@ Start region "Solna":
 
     tools/start-memcached.sh Solna
     tools/start-keystone-region.sh Solna mysql-Solna-22
-    tools/start-glance.sh Solna mysql-Solna-22 keystone_Kista
+    # tools/start-glance.sh Solna mysql-Solna-22 keystone_Kista
+    tools/start-glance.sh Solna mysql-Solna-22 keystone_Solna
 
 References with useful information:
 ---------------------------------
