@@ -3,6 +3,8 @@ MAINTAINER hafe
 
 # An image with all the OpenStack client packages installed
 
+RUN sed -i 's/archive.ubuntu.com/ftp.acc.umu.se/g' /etc/apt/sources.list
+
 RUN apt-get update && apt-get install -y \
     libffi-dev \
     libssl-dev \

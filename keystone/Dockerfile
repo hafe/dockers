@@ -1,9 +1,7 @@
 FROM hafe/os-base
 MAINTAINER hafe
 
-RUN sed -i 's/archive.ubuntu.com/ftp.acc.umu.se/g' /etc/apt/sources.list
-
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
         keystone \
         patch && \
     rm -f /var/lib/keystone/keystone.sqlite
