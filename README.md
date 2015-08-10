@@ -112,12 +112,13 @@ Start region "Solna":
     # Start slave database cluster
     tools/start-mysql-galera.sh Solna 20
     # wait until galera cluster is up and synced
+    docker logs -f mysql-Solna-21
 
     # start replication of slave database server, see mysql-galera/README
 
     tools/start-memcached.sh Solna
-    tools/start-keystone-region.sh Solna mysql-Solna-22
-    tools/start-glance.sh Solna mysql-Solna-22 keystone_Kista
+    tools/start-keystone-region-2.sh Solna mysql-Solna-21
+    tools/start-glance.sh Solna mysql-Solna-21 keystone_Kista
 
 References with useful information:
 ---------------------------------
