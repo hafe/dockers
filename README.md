@@ -120,6 +120,18 @@ Start region "Solna":
     tools/start-keystone-region-2.sh Solna mysql-Solna-21
     tools/start-glance.sh Solna mysql-Solna-21 keystone_Kista
 
+Test Image API access in different regions:
+---------------------------------------------
+    docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
+    export OS_USERNAME=john
+    export OS_PASSWORD=john
+    export OS_USER_DOMAIN_NAME=acme
+    export OS_PROJECT_DOMAIN_NAME=acme
+    export OS_PROJECT_NAME=demo
+    glance --os-region-name Kista image-list
+    glance --os-region-name Solna image-list
+    exit
+
 References with useful information:
 ---------------------------------
 * http://dev.mysql.com/doc/refman/5.6/en/index.html
