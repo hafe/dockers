@@ -24,7 +24,7 @@ Build container images
 
 Source credentials
 ------------------
-    . credentials
+    . credentials.sh
 
 Cleanup and delete ALL existing containers & volumes
 --------------------------------------------------------------------
@@ -52,13 +52,13 @@ Start master region 'Kista':
 
     tools/start-memcached.sh Kista
     tools/start-keystone-region-1.sh Kista mysql-Kista-11 master
-    
+
     # create domain 'acme' and project 'demo'
     docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
     openstack domain create --description "acme LDAP domain" acme
     openstack project create --domain acme --description "Demo project" demo
     exit
-    
+
     # Restart keystone after domain and project has been created
     # (cannot use 'docker restart' since IP changes)
     docker stop keystone_Kista
@@ -88,7 +88,7 @@ Start master region 'Kista':
     openstack role assignment list
     openstack group list --domain acme
     exit
-    
+
     # Test Keystone API access for user 'john'
     docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
     export OS_USERNAME=john
@@ -98,7 +98,7 @@ Start master region 'Kista':
     export OS_PROJECT_NAME=demo
     openstack catalog list
     exit
-    
+
     # Start glance
     tools/start-glance.sh Kista mysql-Kista-12 keystone_Kista
 
