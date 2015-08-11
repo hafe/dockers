@@ -42,16 +42,16 @@ Start LDAP server and provision it:
 
 Create Fernet keys data container:
 -----------------------------------------
-    tools/start-keystone-fernet-keys.sh
+    keystone/start-keystone-fernet-keys.sh
 
 Start master region 'Kista':
 ----------------------------
-    tools/start-mysql-galera.sh Kista 10
-    # wait until galera cluster is up and synced
-    docker logs -f mysql-Kista-11
+    mysql/start-mysql.sh mysql-Kista 10
+    # wait until database server is up
+    docker logs -f mysql-Kista
 
     tools/start-memcached.sh Kista
-    tools/start-keystone-region-1.sh Kista mysql-Kista-11 master
+    keystone/start-keystone-region-1.sh Kista mysql-Kista master
 
     # create domain 'acme' and project 'demo'
     docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
@@ -65,7 +65,7 @@ Start master region 'Kista':
     docker rm keystone_Kista
     docker rm -f memcached_Kista
     tools/start-memcached.sh Kista
-    tools/start-keystone-region-2.sh Kista mysql-Kista-11
+    keystone/start-keystone-region-2.sh Kista mysql-Kista
 
     # Assign role 'user' role to group 'demo' in project 'demo'
     # Needs to be done after the keystone restart to reference the group in LDAP
@@ -100,7 +100,7 @@ Start master region 'Kista':
     exit
 
     # Start glance
-    tools/start-glance.sh Kista mysql-Kista-12 keystone_Kista
+    glance/start-glance.sh Kista mysql-Kista keystone_Kista
 
     # Test Glance API access for user 'admin'
     docker run -it --link keystone_Kista:keystone --rm hafe/openstack-client
@@ -109,16 +109,15 @@ Start master region 'Kista':
 
 Start region "Solna":
 ----------------------
-    # Start slave database cluster
-    tools/start-mysql-galera.sh Solna 20
-    # wait until galera cluster is up and synced
-    docker logs -f mysql-Solna-21
+    mysql/start-mysql.sh mysql-Solna 20
+    # wait until database server is up
+    docker logs -f mysql-Solna
 
-    # start replication of slave database server, see mysql-galera/README
+    # start replication of slave database server, see mysql/README
 
     tools/start-memcached.sh Solna
-    tools/start-keystone-region-2.sh Solna mysql-Solna-21
-    tools/start-glance.sh Solna mysql-Solna-21 keystone_Kista
+    keystone/start-keystone-region-2.sh Solna mysql-Solna keystone_Kista
+    glance/start-glance.sh Solna mysql-Solna keystone_Kista
 
 Test Image API access in different regions:
 ---------------------------------------------

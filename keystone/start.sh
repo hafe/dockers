@@ -35,12 +35,14 @@ check_required_vars DB_SERVICE_HOST MEMCACHED_PORT_11211_TCP_ADDR \
 # lets wait for the DB to be available
 wait_for 25 1 check_for_db
 
-echo "Setting up Keystone DB"
-mysql -h ${DB_SERVICE_HOST} -u root -p"${DB_ROOT_PASSWORD}" mysql <<EOF
+if [ "$role" == "master" ]; then
+    echo "Setting up Keystone DB"
+    mysql -h ${DB_SERVICE_HOST} -u root -p"${DB_ROOT_PASSWORD}" mysql <<EOF
 CREATE DATABASE IF NOT EXISTS ${KEYSTONE_DB_NAME};
 GRANT ALL PRIVILEGES ON ${KEYSTONE_DB_NAME}.* TO
-    '${KEYSTONE_DB_USER}'@'%' IDENTIFIED BY '${KEYSTONE_DB_PASSWORD}'
+    '${KEYSTONE_DB_USER}'@'%' IDENTIFIED BY '${KEYSTONE_DB_PASSWORD}';
 EOF
+fi
 
 # File path and name used by crudini tool
 cfg=/etc/keystone/keystone.conf
@@ -141,8 +143,8 @@ if [ "$DEFAULT_IDENTITY_DRIVER" == "ldap" ]; then
     configure_ldap /etc/keystone/keystone.conf
 fi
 
-echo "Populating the identity service database..."
-if [ $role == "master" ]; then
+if [ "$role" == "master" ]; then
+    echo "Populating the identity service database..."
     keystone-manage db_sync
 fi
 
