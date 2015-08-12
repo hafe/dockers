@@ -36,11 +36,6 @@ crudini --set /etc/glance/glance-api.conf \
     registry_host \
     "${GLANCE_REGISTRY_SERVICE_HOST}"
 
-crudini --set /etc/glance/glance-api.conf \
-    DEFAULT \
-    use_user_token \
-    True
-
 crudini --set /etc/glance/glance-api-paste.ini \
     "filter:authtoken" \
     identity_uri \

@@ -16,6 +16,7 @@ docker exec -it mysql-Solna env MASTER_IP=$masterip bash
 
 mysql -pdbroot -e "CHANGE MASTER TO MASTER_HOST='$MASTER_IP', MASTER_PORT=3306, MASTER_AUTO_POSITION=1;"
 mysql -pdbroot -e "START SLAVE USER='repl' PASSWORD='replpass';"
+exit
 
 # Check replication setup on slave
 docker exec -it mysql-Solna env MASTER_IP=$masterip bash

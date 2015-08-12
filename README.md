@@ -12,10 +12,10 @@ Short description:
 ------------------
 * Human users are in a singleton (shared by all regions) LDAP server.
 * OpenStack Kilo is used since containers use Ubuntu 15.04 as base and its OS packages.
-* Some ugly patches applied to Keystone which will break soon, FIX!
-* A mysql-5.6-galera cluster (3 containers) is started per region
+* Keystone image use git repo master branch to get latest fixes
+* A mysql-5.6 database server is started per region
 * Keystone configured to use Fernet tokens
-* mysql async master/slave replication between the master cluster and slave clusters
+* mysql master/slave replication between the master DB server and slave DB server(s)
 * Some reuse from the OpenStack kolla project, see ref below
 
 Build container images
@@ -116,7 +116,7 @@ Start region "Solna":
     # start replication of slave database server, see mysql/README
 
     tools/start-memcached.sh Solna
-    keystone/start-keystone-region-2.sh Solna mysql-Solna keystone_Kista
+    keystone/start-keystone-slave.sh Solna mysql-Solna keystone_Kista
     glance/start-glance.sh Solna mysql-Solna keystone_Kista
 
 Test Image API access in different regions:

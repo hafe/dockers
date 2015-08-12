@@ -37,6 +37,15 @@ for cfg in /etc/glance/glance-api.conf /etc/glance/glance-registry.conf; do
         auth_region \
         $REGION_NAME
     crudini --set $cfg \
+        DEFAULT \
+        auth_strategy \
+        keystone
+    crudini --set $cfg \
+        DEFAULT \
+        use_user_token \
+        True
+
+    crudini --set $cfg \
         keystone_authtoken \
         auth_uri \
         "http://${KEYSTONE_PUBLIC_SERVICE_HOST}:5000"

@@ -62,4 +62,5 @@ RUN mkdir -p /opt/kolla
 COPY service_hosts.sh /opt/kolla/service_hosts.sh
 COPY kolla-common.sh /opt/kolla/kolla-common.sh
 COPY crux.sh /opt/kolla/crux.sh
+COPY create-endpoints.sh /
 
