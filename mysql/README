@@ -3,17 +3,9 @@
 http://dev.mysql.com/doc/refman/5.6/en/replication.html
 https://dev.mysql.com/doc/refman/5.6/en/replication-solutions-scaleout.html
 
-# Create replication user in master server
-docker exec -it mysql-Kista bash
-mysql -pdbroot -e "CREATE USER 'repl'@'%' IDENTIFIED BY 'replpass';"
-mysql -pdbroot -e "GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';"
-exit
-
 # Start slave replication
-
 masterip=$(docker inspect -f "{{.NetworkSettings.IPAddress}}" mysql-Kista)
 docker exec -it mysql-Solna env MASTER_IP=$masterip bash
-
 mysql -pdbroot -e "CHANGE MASTER TO MASTER_HOST='$MASTER_IP', MASTER_PORT=3306, MASTER_AUTO_POSITION=1;"
 mysql -pdbroot -e "START SLAVE USER='repl' PASSWORD='replpass';"
 exit

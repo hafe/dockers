@@ -144,6 +144,10 @@ fi
 if [ "$role" == "master" ]; then
     echo "Populating the identity service database..."
     keystone-manage db_sync
+
+    echo "Creating replication user"
+    mysql -h $DB_SERVICE_HOST -u root -pdbroot -e "CREATE USER 'repl'@'%' IDENTIFIED BY 'replpass';"
+    mysql -h $DB_SERVICE_HOST -u root -pdbroot -e "GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';"
 fi
 
 echo "Starting keystone"
