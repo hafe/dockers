@@ -113,10 +113,18 @@ Start region "Solna":
     # wait until database server is up
     docker logs -f mysql-Solna
 
-    # start replication of slave database server, see mysql/README
+    # start replication of slave database server (also  see mysql/README)
+    masterip=$(docker inspect -f "{{.NetworkSettings.IPAddress}}" mysql-Kista)
+    docker exec -it mysql-Solna env MASTER_IP=$masterip bash
+    mysql -pdbroot -e "CHANGE MASTER TO MASTER_HOST='$MASTER_IP', MASTER_PORT=3306, MASTER_AUTO_POSITION=1;"
+    mysql -pdbroot -e "START SLAVE USER='repl' PASSWORD='replpass';"
+    exit
+
+    docker exec -it mysql-Solna mysql -pdbroot keystone -e "select * from domain;"
 
     tools/start-memcached.sh Solna
     keystone/start-keystone-slave.sh Solna mysql-Solna keystone_Kista
+
     glance/start-glance.sh Solna mysql-Solna keystone_Kista
 
 Test Image API access in different regions:
@@ -127,6 +135,7 @@ Test Image API access in different regions:
     export OS_USER_DOMAIN_NAME=acme
     export OS_PROJECT_DOMAIN_NAME=acme
     export OS_PROJECT_NAME=demo
+    export OS_IMAGE_API_VERSION=2
     glance --os-region-name Kista image-list
     glance --os-region-name Solna image-list
     exit

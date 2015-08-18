@@ -39,6 +39,7 @@ docker run \
     --rm \
     -e OS_USERNAME=$OS_ADMIN_USERNAME \
     -e OS_PASSWORD=$OS_ADMIN_PASSWORD \
+    -e OS_REGION_NAME=Kista \
     -e REGION_NAME=$region_name \
     -e OS_TOKEN=$KEYSTONE_ADMIN_TOKEN \
     --link $name:keystone \
